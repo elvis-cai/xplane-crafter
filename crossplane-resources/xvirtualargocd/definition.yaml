@@ -51,3 +51,6 @@ spec:
                   helmProviderName:
                     description: Name of the Helm provider created for vcluster
                     type: string
+                  kubernetesProviderName:
+                    description: Name of the kubernetes provider created for vcluster
+                    type: string

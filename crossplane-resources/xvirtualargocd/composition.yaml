@@ -139,6 +139,8 @@ spec:
         mergeOptions:
           appendSlice: true
           keepMapValues: true
+
+        
   - name: provider-config-kubernetes-vcluster
     base:
       apiVersion: kubernetes.crossplane.io/v1alpha1
@@ -166,6 +168,8 @@ spec:
     - type: ToCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: status.vcluster.kubernetesProviderName
+
+
   - name: create-tenant-application
     base:
       apiVersion: kubernetes.crossplane.io/v1alpha1
