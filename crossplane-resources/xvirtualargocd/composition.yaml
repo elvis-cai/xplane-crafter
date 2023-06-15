@@ -139,3 +139,78 @@ spec:
         mergeOptions:
           appendSlice: true
           keepMapValues: true
+  - name: provider-config-kubernetes-vcluster
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: ProviderConfig
+      metadata:
+        name: foo
+      spec:
+        credentials:
+          source: Secret
+          secretRef:
+            key: config
+            name: vcluster-kubeconfig
+            namespace: foo
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-kubernetes-provider"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.credentials.secretRef.namespace
+    - type: ToCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: status.vcluster.kubernetesProviderName
+  - name: create-tenant-application
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      metadata:
+        name: foo
+      spec:
+        managementPolicy: ObserveCreateUpdate
+        forProvider:
+          manifest:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Application
+            metadata:
+              name: nginx
+              namespace: argocd
+            spec:
+              destination:
+                namespace: default
+                server: https://kubernetes.default.svc
+              project: default
+              source:
+                chart: nginx
+                helm:
+                  releaseName: nginx
+                  parameters:
+                    - name: service.type
+                      value: ClusterIP
+                repoURL: 'https://charts.bitnami.com/bitnami'
+                targetRevision: 15.0.2
+              syncPolicy:
+                automated:
+                  selfHeal: true
+                  prune: true
+                syncOptions:
+                  - CreateNamespace=true
+        providerConfigRef:
+          name: foo
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-developer-application"
+    - type: FromCompositeFieldPath
+      fromFieldPath: status.vcluster.kubernetesProviderName
+      toFieldPath: spec.providerConfigRef.name
